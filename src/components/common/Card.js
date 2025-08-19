@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: SIZES.radius,
     marginBottom: SIZES.margin,
-    ...SHADOWS.light,
+    ...SHADOWS.heavy,
   },
   header: {
     padding: SIZES.padding,

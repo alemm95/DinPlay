@@ -1,15 +1,18 @@
 // Constantes globales de la aplicación
 export const COLORS = {
-  primary: "#007AFF",
+  primary: "#00bd09ff",
   secondary: "#5856D6",
   success: "#34C759",
   warning: "#FF9500",
   error: "#FF3B30",
-  background: "#F8F9FA",
-  surface: "#FFFFFF",
-  text: "#1A1A1A",
-  textSecondary: "#666666",
-  border: "#E5E5E5",
+  background: "#1C1C1C",
+  surface: "#2A2A2A",
+  text: "#FFFFFF",
+  textSecondary: "#B0B0B0",
+  border: "#0F0F0F",
+  accent1: "#A020F0",
+  accent2: "#00E5FF",
+  accent3: "#FFD600",
 };
 
 export const SIZES = {
@@ -61,7 +64,7 @@ export const SHADOWS = {
     elevation: 4,
   },
   heavy: {
-    shadowColor: "#000",
+    shadowColor: COLORS.accent1,
     shadowOffset: {
       width: 0,
       height: 4,
