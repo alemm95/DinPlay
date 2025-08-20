@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
+import SpotifyAuthService from "../services/SpotifyAuthService";
 
 // Estado inicial
 const initialState = {
@@ -63,27 +70,52 @@ const authReducer = (state, action) => {
 };
 
 // Contexto
-const AuthContext = createContext();
+const AuthContext = createContext({});
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 // Provider
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = () => {
+    const isValid = SpotifyAuthService.isTokenValid();
+    setIsAuthenticated(isValid);
+    if (!isValid) {
+      setUser(null);
+    }
+  };
 
   // Acciones
   const setLoading = (loading) => {
     dispatch({ type: ActionTypes.SET_LOADING, payload: loading });
   };
 
-  const setUser = (user) => {
-    dispatch({ type: ActionTypes.SET_USER, payload: user });
-  };
+  // const setUser = (user) => {
+  //   dispatch({ type: ActionTypes.SET_USER, payload: user });
+  // };
 
   const setError = (error) => {
     dispatch({ type: ActionTypes.SET_ERROR, payload: error });
   };
 
   const logout = () => {
-    dispatch({ type: ActionTypes.LOGOUT });
+    SpotifyAuthService.logout();
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   const clearError = () => {
@@ -94,16 +126,34 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      // Aquí iría la llamada a la API
-      // const response = await apiService.login(credentials);
-      // setUser(response.data.user);
+      // Autenticar con Spotify
+      const authResult = await SpotifyAuthService.authenticate();
 
-      // Simulación por ahora
-      setTimeout(() => {
-        setUser({ id: 1, name: "Usuario Demo", email: credentials.email });
-      }, 1000);
+      if (authResult.success) {
+        // Obtener información del usuario
+        const userProfile = await SpotifyAuthService.getUserProfile();
+
+        setUser({
+          id: userProfile.id,
+          name: userProfile.display_name,
+          email: userProfile.email,
+          image: userProfile.images?.[0]?.url,
+          country: userProfile.country,
+          followers: userProfile.followers?.total,
+          premium: userProfile.product === "premium",
+        });
+
+        setIsAuthenticated(true);
+        return { success: true, user: userProfile };
+      }
     } catch (error) {
-      setError(error.message);
+      console.error("Error en login:", error);
+      return {
+        success: false,
+        error: error.message || "Error al iniciar sesión con Spotify",
+      };
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,6 +175,9 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     ...state,
+    user,
+    isLoading,
+    isAuthenticated,
     setLoading,
     setUser,
     setError,
@@ -135,13 +188,4 @@ export const AuthProvider = ({ children }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Hook para usar el contexto
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

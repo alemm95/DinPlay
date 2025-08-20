@@ -1,16 +1,44 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Card } from "../components/common";
 import { globalStyles } from "../styles/globalStyles";
 import { COLORS } from "../constants/theme";
+import { useDispatch } from "react-redux";
+import { useAppSelector } from "../store/hooks";
+import { checkAuthStatus, logout } from "../store/slices/authSlice";
 
 const HomeScreen = ({ navigation }) => {
-  const handleButtonPress = () => {
-    console.log("Botón presionado");
-    navigation.navigate("Profile");
-    // navigation.navigate('Profile');
+  const dispatch = useDispatch();
+  const { user, isAuthenticated, loading } = useAppSelector(
+    (state) => state.auth
+  );
+
+  // Remover la verificación automática para evitar loops
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigation.navigate("Login");
   };
+
+  const handleGoToProfile = () => {
+    navigation.navigate("Profile");
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={globalStyles.safeArea}>
+        <View
+          style={[
+            styles.container,
+            { justifyContent: "center", alignItems: "center" },
+          ]}
+        >
+          <Text style={globalStyles.subtitle}>Cargando...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={globalStyles.safeArea}>
@@ -18,37 +46,56 @@ const HomeScreen = ({ navigation }) => {
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
-        <Text style={globalStyles.title}>Bienvenido a DinPlay</Text>
-        <Text style={globalStyles.subtitle}>
-          Esta es la pantalla principal de tu aplicación
+        <Text style={globalStyles.title}>
+          ¡Hola{user?.name ? `, ${user.name}` : ""}! 🎵
         </Text>
+        <Text style={globalStyles.subtitle}>Bienvenido a DinPlay</Text>
 
-        <Card title="Información" subtitle="Detalles de la aplicación">
-          <Text style={styles.cardText}>
-            Esta es una estructura de carpetas profesional para React Native.
-            Aquí puedes desarrollar tu aplicación de manera organizada.
-          </Text>
-        </Card>
+        {user && (
+          <Card
+            title="Tu Perfil de Spotify"
+            subtitle="Información de tu cuenta"
+          >
+            <View style={styles.userInfo}>
+              {user.image && (
+                <Image source={{ uri: user.image }} style={styles.avatar} />
+              )}
+              <View style={styles.userDetails}>
+                <Text style={styles.userName}>{user.name}</Text>
+                <Text style={styles.userEmail}>{user.email}</Text>
+                <Text style={styles.userCountry}>📍 {user.country}</Text>
+                <Text style={styles.userFollowers}>
+                  👥 {user.followers} seguidores
+                </Text>
+                {user.premium && (
+                  <Text style={styles.premiumBadge}>⭐ Spotify Premium</Text>
+                )}
+              </View>
+            </View>
+          </Card>
+        )}
 
-        <Card title="Funcionalidades">
+        <Card title="Funcionalidades de DinPlay">
           <View style={styles.featureList}>
-            <Text style={styles.featureItem}>• Componentes reutilizables</Text>
-            <Text style={styles.featureItem}>• Navegación estructurada</Text>
-            <Text style={styles.featureItem}>• Gestión de estado</Text>
-            <Text style={styles.featureItem}>• Servicios de API</Text>
-            <Text style={styles.featureItem}>• Hooks personalizados</Text>
+            <Text style={styles.featureItem}>
+              • Autenticación con Spotify ✅
+            </Text>
+            <Text style={styles.featureItem}>• Reproducción de música</Text>
+            <Text style={styles.featureItem}>• Listas de reproducción</Text>
+            <Text style={styles.featureItem}>• Búsqueda de canciones</Text>
+            <Text style={styles.featureItem}>• Perfil personalizado</Text>
           </View>
         </Card>
 
         <View style={styles.buttonContainer}>
           <Button
-            title="Botón Principal"
-            onPress={handleButtonPress}
+            title="Ver Perfil Completo"
+            onPress={handleGoToProfile}
             style={styles.button}
           />
           <Button
-            title="Botón Secundario"
-            onPress={handleButtonPress}
+            title="Cerrar Sesión"
+            onPress={handleLogout}
             variant="outline"
             style={styles.button}
           />
@@ -65,10 +112,45 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 20,
   },
-  cardText: {
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 15,
+  },
+  userDetails: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  userEmail: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    lineHeight: 20,
+    marginBottom: 4,
+  },
+  userCountry: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  userFollowers: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  premiumBadge: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: "bold",
   },
   featureList: {
     marginTop: 8,

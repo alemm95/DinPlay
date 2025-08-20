@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { COLORS } from "../../../constants/theme";
 
 const inputStyles = StyleSheet.create({
   email: {
@@ -10,6 +11,10 @@ const inputStyles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
     marginBottom: 12,
+  },
+  focused: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
   },
 });
 

@@ -1,13 +1,14 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { AuthProvider } from "./src/context/AuthContext";
+import { Provider } from "react-redux";
+import { store } from "./src/store";
 import AppNavigator from "./src/navigation/AppNavigator";
 
 export default function App() {
   return (
-    <AuthProvider>
+    <Provider store={store}>
       <AppNavigator />
       <StatusBar style="light" />
-    </AuthProvider>
+    </Provider>
   );
 }
