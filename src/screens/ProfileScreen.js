@@ -8,21 +8,26 @@ import {
   TouchableOpacity,
   Linking,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Card } from "../components/common";
 import { globalStyles } from "../styles/globalStyles";
 import { COLORS } from "../constants/theme";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/hooks";
 import { logout } from "../store/slices/authSlice";
+import ButtonLogo from "../components/layouts/ButtonLogo";
+import NavigationCapture from "../components/navigation/NavigationCapture";
+import { useNavigation } from "@react-navigation/native";
+import { useMainNavigation } from "../context/MainNavigationContext";
 
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useAppSelector((state) => state.auth);
+  const parentNavigation = useNavigation(); // Para navegar al Login (nivel superior)
+  const { navigation: innerNavigation } = useMainNavigation(); // Para navegar dentro del stack
 
   const handleLogout = () => {
     dispatch(logout());
-    navigation.navigate("Login");
+    parentNavigation.navigate("Login");
   };
 
   const openSpotifyProfile = () => {
@@ -33,20 +38,18 @@ const ProfileScreen = ({ navigation }) => {
 
   if (!user) {
     return (
-      <SafeAreaView style={globalStyles.safeArea}>
-        <View style={[styles.container, { justifyContent: "center" }]}>
-          <Text style={globalStyles.title}>No hay usuario autenticado</Text>
-          <Button
-            title="Ir al Login"
-            onPress={() => navigation.navigate("Login")}
-          />
-        </View>
-      </SafeAreaView>
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <Text style={globalStyles.title}>No hay usuario autenticado</Text>
+        <Button
+          title="Ir al Login"
+          onPress={() => parentNavigation.navigate("Login")}
+        />
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={globalStyles.safeArea}>
+    <NavigationCapture>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
@@ -116,7 +119,13 @@ const ProfileScreen = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <Button
             title="Volver al Inicio"
-            onPress={() => navigation.navigate("Home")}
+            onPress={() => {
+              if (innerNavigation) {
+                innerNavigation.navigate("HomeContent");
+              } else {
+                console.warn("Inner navigation not available");
+              }
+            }}
             style={styles.button}
           />
           <Button
@@ -127,13 +136,13 @@ const ProfileScreen = ({ navigation }) => {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </NavigationCapture>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   contentContainer: {
     padding: 20,

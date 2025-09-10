@@ -1,55 +1,66 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Text, StyleSheet, ScrollView, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Card } from "../components/common";
 import { globalStyles } from "../styles/globalStyles";
 import { COLORS } from "../constants/theme";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/hooks";
-import { checkAuthStatus, logout } from "../store/slices/authSlice";
+import { logout } from "../store/slices/authSlice";
+import ButtonLogo from "../components/layouts/ButtonLogo";
+import NavigationCapture from "../components/navigation/NavigationCapture";
+import { useNavigation } from "@react-navigation/native";
+import { useMainNavigation } from "../context/MainNavigationContext";
 
 const HomeScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { user, isAuthenticated, loading } = useAppSelector(
-    (state) => state.auth
-  );
-
-  // Remover la verificación automática para evitar loops
+  const { user, loading } = useAppSelector((state) => state.auth);
+  const parentNavigation = useNavigation(); // Para navegar al Login (nivel superior)
+  const { navigation: innerNavigation } = useMainNavigation(); // Para navegar dentro del stack
 
   const handleLogout = () => {
     dispatch(logout());
-    navigation.navigate("Login");
+    parentNavigation.navigate("Login");
   };
 
   const handleGoToProfile = () => {
-    navigation.navigate("Profile");
+    if (innerNavigation) {
+      innerNavigation.navigate("ProfileContent");
+    } else {
+      console.warn("Inner navigation not available");
+    }
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={globalStyles.safeArea}>
-        <View
-          style={[
-            styles.container,
-            { justifyContent: "center", alignItems: "center" },
-          ]}
-        >
-          <Text style={globalStyles.subtitle}>Cargando...</Text>
-        </View>
-      </SafeAreaView>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={globalStyles.subtitle}>Cargando...</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={globalStyles.safeArea}>
+    <NavigationCapture>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
-        <Text style={globalStyles.title}>
-          ¡Hola{user?.name ? `, ${user.name}` : ""}! 🎵
-        </Text>
-        <Text style={globalStyles.subtitle}>Bienvenido a DinPlay</Text>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <ButtonLogo navigation={navigation} />
+          <Text style={globalStyles.title}>
+            ¡Hola{user?.name ? `, ${user.name}` : ""}! 🎵
+          </Text>
+        </View>
 
         {user && (
           <Card
@@ -101,13 +112,13 @@ const HomeScreen = ({ navigation }) => {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </NavigationCapture>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   contentContainer: {
     padding: 20,

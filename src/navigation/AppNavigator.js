@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { HomeScreen, ProfileScreen } from "../screens";
 import { COLORS } from "../constants/theme";
 import LoginScreen from "../screens/LoginScreen";
+import MainContainer from "../components/layouts/MainContainer";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../store/hooks";
 import { checkAuthStatus } from "../store/slices/authSlice";
@@ -22,7 +22,7 @@ const AppNavigator = () => {
       await dispatch(checkAuthStatus());
       setIsInitialCheck(false);
     };
-    
+
     checkAuth();
   }, [dispatch]);
 
@@ -50,18 +50,14 @@ const AppNavigator = () => {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
+          animation: "fade", // Animación suave entre Login y Main
         }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen
-          name="Home"
-          component={HomeScreen}
+          name="Main"
+          component={MainContainer}
           options={{ title: "DinPlay" }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ title: "Perfil" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

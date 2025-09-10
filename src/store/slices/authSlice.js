@@ -52,11 +52,11 @@ export const loginWithSpotify = createAsyncThunk(
 );
 
 export const checkAuthStatus = createAsyncThunk(
-  'auth/checkAuthStatus',
+  "auth/checkAuthStatus",
   async (_, { rejectWithValue }) => {
     try {
       const isValid = SpotifyAuthService.isTokenValid();
-      
+
       if (!isValid) {
         // No hay token válido, devolver estado no autenticado
         return { isAuthenticated: false };
@@ -65,7 +65,7 @@ export const checkAuthStatus = createAsyncThunk(
       // Solo si hay token válido, intentar obtener el perfil
       const userProfile = await SpotifyAuthService.getUserProfile();
       const token = SpotifyAuthService.getAccessToken();
-      
+
       return {
         user: {
           id: userProfile.id,
@@ -74,7 +74,7 @@ export const checkAuthStatus = createAsyncThunk(
           image: userProfile.images?.[0]?.url,
           country: userProfile.country,
           followers: userProfile.followers?.total || 0,
-          premium: userProfile.product === 'premium',
+          premium: userProfile.product === "premium",
           spotifyUri: userProfile.uri,
           externalUrl: userProfile.external_urls?.spotify,
         },
@@ -82,7 +82,7 @@ export const checkAuthStatus = createAsyncThunk(
         isAuthenticated: true,
       };
     } catch (error) {
-      console.log('No hay sesión válida o token expirado');
+      console.log("No hay sesión válida o token expirado");
       return { isAuthenticated: false };
     }
   }
@@ -141,7 +141,7 @@ const authSlice = createSlice({
       .addCase(checkAuthStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-        
+
         if (action.payload.isAuthenticated) {
           // Usuario autenticado con datos válidos
           state.user = action.payload.user;
